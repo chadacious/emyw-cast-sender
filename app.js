@@ -5,24 +5,32 @@ const ENJOY_BRIDGE_NS = 'urn:x-cast:enjoy.bridge';
 
 const cjs = new Castjs({ receiver: CAST_APP_ID });
 
+let castSession;
+
 cjs.on('connect', () => {
     castSession = cast.framework.CastContext.getInstance().getCurrentSession();
     // Add an event listener to the defined namespace channel
     castSession.addMessageListener(ENJOY_BRIDGE_NS, async (namespace, message) => {
         // console.log(namespace, message);
         const res = await iframeFetch(message);
-        console.log('sender received response', res);
-        castSession.sendMessage(namespace, res);
+        const resJson = JSON.parse(decodeURIComponent(res));
+        console.log('sender received response', resJson);
+        castSession.sendMessage(namespace, resJson)
+            .then((res) => {
+                console.log('sent', res);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
     });    
 });
-
-let castSession;
 
 // Wait for user interaction
 document.getElementById('cast').addEventListener('click', () => {
     // Check if casting is available
     if (cjs.available) {
         // Initiate new cast session
+        console.log('sending load message');
         cjs.cast('na', { provider: 'DISNEYPLUS', videoId: '30ea8a44-797d-4da8-b776-2e3636a2bf5a' });
     }
 });
