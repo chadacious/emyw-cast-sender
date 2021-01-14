@@ -14,14 +14,35 @@ cjs.on('connect', () => {
         // console.log(namespace, message);
         const res = await iframeFetch(message);
         const resJson = JSON.parse(decodeURIComponent(res));
-        console.log('sender received response', resJson);
-        castSession.sendMessage(namespace, resJson)
-            .then((res) => {
-                console.log('sent', res);
-            })
-            .catch((error) => {
-                console.log(error);
-            });
+        // console.log('sender received response', resJson);
+        if (typeof resJson.payload !== 'object') {
+            const payload1 = resJson.payload.substr(0, resJson.payload.length / 2);
+            const payload2 = resJson.payload.substr(resJson.payload.length / 2, resJson.payload.length);
+            console.log('payload1', payload1);
+            console.log('payload2', payload2);
+            castSession.sendMessage(namespace, { payload1: payload1 })
+                .then((res) => {
+                    console.log('sent', res);
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+            castSession.sendMessage(namespace, { payload2: payload2 })
+                .then((res) => {
+                    console.log('sent', res);
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        } else {
+            castSession.sendMessage(namespace, resJson)
+                .then((res) => {
+                    console.log('sent', res);
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        }
     });    
 });
 
